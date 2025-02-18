@@ -1,0 +1,220 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_DapperLayout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card w-100">
+            <div class="card-body">
+                <h2>Toplam Satış Grafiği</h2>
+                <canvas id="topSellingProductsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card w-100">
+            <div>
+                <h2>Yaşlara Göre Satış Grafiği</h2>
+                <canvas id="salesByAgeGroupChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card w-100">
+            <div>
+                <h2>Kategoriye Göre Satış Grafiği</h2>
+                <canvas id="salesByCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card w-100">
+            <div class="card-body">
+                <h2>Şehre Göre Satış Grafiği</h2>
+                <canvas id="salesByCityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card w-100">
+            <div>
+                <h2>Satış ve Fiyat Grafiği</h2>
+                <canvas id="salesByUnitPriceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card w-100">
+            <div>
+                <h2>Marka Bazlı Satış Analizi</h2>
+                <canvas id="salesByBrandChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br /><br /><br />
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // En Çok Satılan Ürünler Grafiği
+              var topSellingProducts = @Html.Raw(Json.Serialize(ViewBag.TopSellingProducts));
+
+
+        var topSellingProductsLabels = topSellingProducts.map(item => item.ITEMNAME);
+        var topSellingProductsData = topSellingProducts.map(item => item.TotalAmount);
+
+        var topSellingProductsChart = new Chart(document.getElementById('topSellingProductsChart'), {
+            type: 'bar',
+            data: {
+                labels: topSellingProductsLabels,
+                datasets: [{
+                    label: 'Toplam Satış',
+                    data: topSellingProductsData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+
+
+
+
+
+    // Şehirlere Göre Satış Dağılımı Grafiği
+    var salesByCity = @Html.Raw(Json.Serialize(ViewBag.SalesByCity));
+    var salesByCityLabels = salesByCity.map(item => item.CITY);
+    var salesByCityData = salesByCity.map(item => item.TotalRevenue);
+
+    var salesByCityChart = new Chart(document.getElementById('salesByCityChart'), {
+        type: 'pie',
+        data: {
+            labels: salesByCityLabels,
+            datasets: [{
+                data: salesByCityData,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                hoverOffset: 4
+            }]
+        }
+    });
+
+    // Yaş Gruplarına Göre Satış Analizi
+    var salesByAgeGroup = @Html.Raw(Json.Serialize(ViewBag.SalesByAgeGroup));
+    var salesByAgeGroupLabels = salesByAgeGroup.map(item => item.AgeGroup);
+    var salesByAgeGroupData = salesByAgeGroup.map(item => item.TotalRevenue);
+
+    var salesByAgeGroupChart = new Chart(document.getElementById('salesByAgeGroupChart'), {
+        type: 'bar',
+        data: {
+            labels: salesByAgeGroupLabels,
+            datasets: [{
+                label: 'Yaşlara Göre Satış',
+                data: salesByAgeGroupData,
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        }
+    });
+
+    // Ürün Kategorilerine Göre Ciro Dağılımı
+    var salesByCategory = @Html.Raw(Json.Serialize(ViewBag.SalesByCategory));
+    var salesByCategoryLabels = salesByCategory.map(item => item.CATEGORY1);
+    var salesByCategoryData = salesByCategory.map(item => item.TotalRevenue);
+
+    var salesByCategoryChart = new Chart(document.getElementById('salesByCategoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: salesByCategoryLabels,
+            datasets: [{
+                data: salesByCategoryData,
+                backgroundColor: ['#FF8C00', '#32CD32', '#8A2BE2', '#DC143C'],
+                hoverOffset: 4
+            }]
+        }
+    });
+
+    // Ürün Fiyatı ile Satış Miktarı Arasındaki İlişki
+    var salesByUnitPrice = @Html.Raw(Json.Serialize(ViewBag.SalesByUnitPrice));
+    var unitPriceLabels = salesByUnitPrice.map(item => item.UNITPRICE);
+    var unitPriceData = salesByUnitPrice.map(item => item.SALESMARKET);
+
+           var salesByUnitPriceChart = new Chart(document.getElementById('salesByUnitPriceChart'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Ürün Fiyatı İle Satış Oranı',
+                data: salesByUnitPrice.map(item => ({ x: item.UNITPRICE, y: item.TotalAmount })),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        }
+    });
+
+
+       // Marka Bazlı Satış Analizi
+      var salesByBrand = @Html.Raw(Json.Serialize(ViewBag.SalesByBrand ?? new List<object>()));
+
+        if (Array.isArray(salesByBrand) && salesByBrand.length > 0) {
+            console.log("Sales By Brand Data:", salesByBrand);
+
+            var salesByBrandLabels = salesByBrand.map(item => item.BRAND);
+            var salesByBrandData = salesByBrand.map(item => Number(item.TotalRevenue) || 0);
+
+            var ctx = document.getElementById('salesByBrandChart').getContext('2d');
+            var salesByBrandChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: salesByBrandLabels,
+                    datasets: [{
+                        label: 'Toplam Satış Tutarı (₺)',
+                        data: salesByBrandData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'x',
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Satış Tutarı (₺)'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            console.warn("Satış verisi boş!");
+        }
+
+
+</script>
+

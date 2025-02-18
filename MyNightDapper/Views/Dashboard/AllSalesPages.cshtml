@@ -1,0 +1,90 @@
+﻿@model List<dynamic>
+@{
+    ViewData["Title"] = "Tüm Satışlar";
+    int totalPages = ViewBag.TotalPages;
+    int currentPage = ViewBag.CurrentPage;
+    string searchTerm = ViewBag.SearchTerm;
+}
+
+@{
+    ViewData["Title"] = "AllSalesPages";
+    Layout = "~/Views/Shared/_DapperLayout.cshtml";
+}
+
+
+<h2>Tüm Satış Verileri</h2>
+<br />
+
+<!-- Arama Kutusu -->
+<input type="text" id="searchBox" class="form-control" placeholder="Ürün, şehir veya marka ara..." value="@searchTerm">
+
+<!-- Tablo -->
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ürün</th>
+            <th>Fiyat</th>
+            <th>Miktar</th>
+            <th>Toplam</th>
+            <th>Şehir</th>
+            <th>Marka</th>
+            <th>Tarih</th>
+        </tr>
+    </thead>
+    <tbody id="salesTable">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ID</td>
+                <td>@item.ITEMNAME</td>
+                <td>@item.UNITPRICE</td>
+                <td>@item.AMOUNT</td>
+                <td>@item.TOTALPRICE</td>
+                <td>@item.CITY</td>
+                <td>@item.BRAND</td>
+                <td>@item.DATE_</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Sayfalama -->
+<ul class="pagination">
+    @{
+        int maxPageLinks = 10; // En fazla kaç sayfa linki gösterilecek (Örneğin 10)
+        int startPage = Math.Max(1, currentPage - (maxPageLinks / 2)); // Başlangıç noktası
+        int endPage = Math.Min(totalPages, startPage + maxPageLinks - 1); // Bitiş noktası
+    }
+
+    <!-- Önceki Sayfa Butonu -->
+    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+        <a class="page-link" href="?page=@(currentPage - 1)&searchTerm=@searchTerm">«</a>
+    </li>
+
+    @for (int i = startPage; i <= endPage; i++)
+    {
+        <li class="page-item @(i == currentPage ? "active" : "")">
+            <a class="page-link" href="?page=@i&searchTerm=@searchTerm">@i</a>
+        </li>
+    }
+
+    <!-- Sonraki Sayfa Butonu -->
+    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+        <a class="page-link" href="?page=@(currentPage + 1)&searchTerm=@searchTerm">»</a>
+    </li>
+</ul>
+
+<script>
+    document.getElementById('searchBox').addEventListener('input', function () {
+        let searchValue = this.value;
+
+        fetch(`?page=1&searchTerm=${searchValue}`)
+            .then(response => response.text())
+            .then(html => {
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(html, 'text/html');
+                document.getElementById('salesTable').innerHTML = doc.getElementById('salesTable').innerHTML;
+            });
+    });
+</script>
